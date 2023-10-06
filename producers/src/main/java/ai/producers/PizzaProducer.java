@@ -79,9 +79,9 @@ public class PizzaProducer {
         if (!sync) {
             kafkaProducer.send(producerRecord, (metadata, exception) -> {
                 if (exception == null) {
-                    logger.info("async message : " + pMessage.get("key") + " partition: "
-                        + metadata.partition() +
-                        "offset: " + metadata.offset());
+                    logger.info("async message : " + pMessage.get("key") +
+                        " partition: " + metadata.partition() +
+                        " offset: " + metadata.offset());
                 } else {
                     logger.error("exception error from broker " + exception.getMessage());
                 }
@@ -90,9 +90,9 @@ public class PizzaProducer {
             try {
                 RecordMetadata metadata = kafkaProducer.send(producerRecord).get();
                 logger.info(
-                    "sync message : " + pMessage.get("key") + " partition: " + metadata.partition()
-                        +
-                        "offset: " + metadata.offset());
+                    "sync message : " + pMessage.get("key") +
+                        " partition: " + metadata.partition() +
+                        " offset: " + metadata.offset());
             } catch (InterruptedException e) {
                 e.printStackTrace();
             } catch (ExecutionException e) {
@@ -110,12 +110,14 @@ public class PizzaProducer {
             StringSerializer.class.getName());
         props.setProperty(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
             StringSerializer.class.getName());
+        props.setProperty(ProducerConfig.ACKS_CONFIG,
+            "0"); // 0이면 안 기다림(async) ,  0 일 때 동기로 하면 안됨(offset 안나옴).
 
         KafkaProducer<String, String> kafkaProducer = new KafkaProducer<>(props);
 
         String topicName = "pizza-topic";
 
-        sendPizzaMessage(kafkaProducer, topicName, -1, 1000, 0, 0, false);
+        sendPizzaMessage(kafkaProducer, topicName, -1, 1000, 0, 0, true);
 
         kafkaProducer.close();
     }
