@@ -125,7 +125,7 @@ public class PizzaProducer {
 
         String topicName = "pizza-topic";
 
-        sendPizzaMessage(kafkaProducer, topicName, -1, 1000, 0, 0, false);
+        sendPizzaMessage(kafkaProducer, topicName, -1, 500, 0, 0, true);
 
         kafkaProducer.close();
     }
