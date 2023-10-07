@@ -14,10 +14,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-public class PizzaProducer {
+public class PizzaProducerCustomPartitioner {
 
     private static final Logger logger = LoggerFactory.getLogger(
-        PizzaProducer.class.getName());
+        PizzaProducerCustomPartitioner.class.getName());
 
     public static void sendPizzaMessage(
         KafkaProducer<String, String> kafkaProducer,
@@ -110,22 +110,15 @@ public class PizzaProducer {
             StringSerializer.class.getName());
         props.setProperty(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
             StringSerializer.class.getName());
-//        props.setProperty(ProducerConfig.ACKS_CONFIG,  "all"); // 0이면 안 기다림(async) ,  0 일 때 동기로 하면 안됨(offset 안나옴).
-
-//        props.setProperty(ProducerConfig.BATCH_SIZE_CONFIG, "32000");
-//        props.setProperty(ProducerConfig.LINGER_MS_CONFIG, "20"); // millisecond
-
-//        props.setProperty(ProducerConfig.DELIVERY_TIMEOUT_MS_CONFIG, "50000");
-
-//        props.setProperty(ProducerConfig.MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION, "6");
-//        props.setProperty(ProducerConfig.ACKS_CONFIG, "0");
-//        props.setProperty(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, "true");    // acks_config : all or -1 로 해야함.
+        props.setProperty("custom.specialKey", "P001");
+        props.setProperty(ProducerConfig.PARTITIONER_CLASS_CONFIG,
+            "ai.producers.CustomPartitioner");
 
         KafkaProducer<String, String> kafkaProducer = new KafkaProducer<>(props);
 
-        String topicName = "pizza-topic";
+        String topicName = "pizza-topic-partitioner";
 
-        sendPizzaMessage(kafkaProducer, topicName, -1, 1000, 0, 0, false);
+        sendPizzaMessage(kafkaProducer, topicName, -1, 100, 0, 0, true);
 
         kafkaProducer.close();
     }
