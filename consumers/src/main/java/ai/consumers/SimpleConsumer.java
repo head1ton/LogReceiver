@@ -1,12 +1,19 @@
 package ai.consumers;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Properties;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.StringDeserializer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SimpleConsumer {
+
+    private static final Logger logger = LoggerFactory.getLogger(SimpleConsumer.class.getName());
 
     public static void main(String[] args) {
 
@@ -20,5 +27,17 @@ public class SimpleConsumer {
 
         KafkaConsumer<String, String> kafkaConsumer = new KafkaConsumer<>(props);
         kafkaConsumer.subscribe(List.of(topicName));
+
+        while (true) {
+            ConsumerRecords<String, String> consumerRecords = kafkaConsumer.poll(
+                Duration.ofMillis(1000));
+            for (ConsumerRecord<String, String> record : consumerRecords) {
+                logger.info("record key : {}, record value: {}, partition: {}", record.key(),
+                    record.value(), record.partition());
+            }
+        }
+
+//        kafkaConsumer.close();
+
     }
 }
