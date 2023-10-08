@@ -2,12 +2,16 @@ package ai.consumers;
 
 import java.time.Duration;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import org.apache.kafka.clients.consumer.CommitFailedException;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.clients.consumer.OffsetAndMetadata;
+import org.apache.kafka.clients.consumer.OffsetCommitCallback;
+import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.errors.WakeupException;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.slf4j.Logger;
@@ -52,7 +56,49 @@ public class ConsumerCommit {
 //        kafkaConsumer.close();
 //        pollAutoCommit(kafkaConsumer);
 
-        pollCommitSync(kafkaConsumer);
+//        pollCommitSync(kafkaConsumer);
+
+        pollCommitAsync(kafkaConsumer);
+    }
+
+    private static void pollCommitAsync(final KafkaConsumer<String, String> kafkaConsumer) {
+        int loopCnt = 0;
+
+        try {
+            while (true) {
+                ConsumerRecords<String, String> consumerRecords = kafkaConsumer.poll(
+                    Duration.ofMillis(1000));
+                logger.info("####### loopCnt: {} consumerRecords count: {}", loopCnt++,
+                    consumerRecords.count());
+                for (ConsumerRecord<String, String> record : consumerRecords) {
+                    logger.info(
+                        "record key : {}, record offset: {}, partition: {}, record value: {}",
+                        record.key(), record.offset(), record.partition(), record.value());
+                }
+
+                kafkaConsumer.commitAsync(new OffsetCommitCallback() {
+                    @Override
+                    public void onComplete(
+                        final Map<TopicPartition, OffsetAndMetadata> offsets,
+                        final Exception exception) {
+                        if (exception != null) {
+                            logger.error("offsets {} is not completed, error : {}", offsets,
+                                exception.getMessage());
+                        }
+                    }
+                });
+
+            }
+        } catch (WakeupException e) {
+            logger.error("wakeup exception has been called");
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+        } finally {
+            logger.info("####### commit sync before closing");
+            kafkaConsumer.commitSync();
+            logger.info("finally consumer is closed");
+            kafkaConsumer.close();
+        }
     }
 
     private static void pollCommitSync(final KafkaConsumer<String, String> kafkaConsumer) {
