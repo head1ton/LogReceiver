@@ -19,6 +19,7 @@ public class SimpleConsumer {
 
         String topicName = "simple-topic";
 
+        // 각각의 옵션을 통해 대량의 데이터 커스터마이징.
         Properties props = new Properties();
         props.setProperty(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "15.164.90.78:9092");
         props.setProperty(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
