@@ -1,4 +1,4 @@
-package ai.practice;
+package ai.practice.producer;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
