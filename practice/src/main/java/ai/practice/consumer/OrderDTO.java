@@ -1,4 +1,4 @@
-package ai.consumers.consumer;
+package ai.practice.consumer;
 
 import java.time.LocalDateTime;
 
